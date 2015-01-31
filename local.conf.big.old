@@ -1,0 +1,66 @@
+[[local|localrc]]
+
+DATABASE_PASSWORD=stackdb
+ADMIN_PASSWORD=nomoresecrete
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+# openssl rand -hex 10
+SERVICE_TOKEN=thequickbrownfox
+RABBIT_PASSWORD=stackqueue
+
+# Host IP to connect to local network
+HOST_IP=192.168.124.36
+FLAT_INTERFACE=eth0
+FIXED_RANGE=10.0.1.0/24
+NETWORK_GATEWAY=10.0.1.1
+FIXED_NETWORK_SIZE=254
+FLOATING_RANGE=91.207.15.0/24
+#PUBLIC_NETWORK_GATEWAY=10.1.192.10
+# Have a compute node somewhere else
+MULTI_HOST=0
+export no_proxy=192.168.124.36,localhost,127.*,::1,10.0.1.*
+
+# Logging
+LOGFILE=$DEST/logs/stack.sh.log
+VERBOSE=True
+LOGDAYS=2
+LOG_COLOR=True
+SCREEN_LOGDIR=/opt/stack/logs
+
+# Essentials of controller node
+ENABLED_SERVICES=rabbit,mysql,key
+
+# Horizon (Dashboard UI)
+ENABLED_SERVICES+=,horizon
+
+# Nova - Compute Service
+# nova-api, nova-cert, nova-conductor, nova-scheduler, nova-novncproxy,
+# nova-consoleauth
+disable_service n-cpu # no nova compute here
+ENABLED_SERVICES+=,n-api,n-crt,,n-cond,n-sch,n-novnc,n-cauth
+IMAGE_URLS+=",https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img"
+
+## Nova Cells
+# ENABLED_SERVICES+=,n-cell
+
+# Glance - Image Service
+ENABLED_SERVICES+=,g-api,g-reg
+
+# Swift - Object Storage
+# ENABLED_SERVICES+=,s-proxy,s-object,s-container,s-account
+
+# Neutron - Networking
+# Service
+# If Neutron is not
+# declared the old good
+# nova-network will be
+# used
+disable_service n-net
+ENABLED_SERVICES+=,q-svc,q-agt,q-dhcp,q-l3,q-meta,neutron
+
+# GRE tunnel configuration
+Q_PLUGIN=ml2
+ENABLE_TENANT_TUNNELS=True
+TENANT_TUNNEL_RANGE=50:100
+
+# Apache fronted for WSGI
+APACHE_ENABLED_SERVICES+=keystone
