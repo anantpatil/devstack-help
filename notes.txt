@@ -237,6 +237,13 @@ re-attach to ports of VM already created, it would take up dynamically.
 nova secgroup-add-rule SECURITY_GROUP_NAME tcp 22 22 0.0.0.0/0
 nova secgroup-add-rule SECURITY_GROUP_NAME icmp -1 -1 0.0.0.0/0
 
+SECURITY_GROUP_NAME would be 'default' by default.
+
+2. Use heat_key to log-in a cirros image:
+    $ ssh -i ~/heat_key cirros@<IP>
+    or
+    $ ssh cirros@<IP> and passwd: cubswin:)
+
 How these security groups work?
 
 
