@@ -37,6 +37,16 @@ enable_service tempest
 USE_SLL=True
 SSL_ENABLED_SERVICES=key,nova,glance,cinder,neutron,heat
 
+# Neutron fails because the neutron server gives certificate with
+# 'ghostrider' as name which fails to map with localhost as name.
+#
 # If neutron fails, then fix the lib/neutron's method to have
 # --no-check-certificate in the wget command. Same for service that fail
 # while devstack is waiting for them to come-up.
+#
+# OR
+#
+# in localrc, give SERVICE_HOST=<hostname> and hostname to no_proxy in
+# local.conf and ~/.zshrc
+# SERVICE_HOST=<hostname>
+# no_proxy='<hostname>,blah,blah>
