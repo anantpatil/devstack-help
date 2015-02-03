@@ -10,6 +10,7 @@ RABBIT_PASSWORD=stackqueue
 DEST=/home/passwordlessuserondebian
 
 HOST_IP=10.1.195.119
+SERVICE_HOST="localhost" #see comments below
 FLAT_INTERFACE=eth0
 FIXED_RANGE=10.0.1.0/24
 NETWORK_GATEWAY=10.0.1.1
@@ -48,5 +49,8 @@ SSL_ENABLED_SERVICES=key,nova,glance,cinder,neutron,heat
 #
 # in localrc, give SERVICE_HOST=<hostname> and hostname to no_proxy in
 # local.conf and ~/.zshrc
-# SERVICE_HOST=<hostname>
-# no_proxy='<hostname>,blah,blah>
+# This hostname should match the hostname in /etc/hosts. Usually it is
+# localhost or sometimes hostname.
+#
+# SERVICE_HOST=localhost
+# no_proxy='localhost,blah,blah>
