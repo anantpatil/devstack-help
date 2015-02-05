@@ -54,3 +54,5 @@ SSL_ENABLED_SERVICES="key,nova,glance,cinder,neutron,heat"
 #
 # SERVICE_HOST=localhost
 # no_proxy='localhost,blah,blah>
+# 
+# Note that this may not work always... better to go with option (1).
