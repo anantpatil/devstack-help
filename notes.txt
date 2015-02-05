@@ -264,16 +264,29 @@ tox.ini
 Add following entry in tox.ini to run the tests. Otherwise pip will block.
 
 [tox]
-indexserver = 
-    default = http://pypi.openstack.org/openstack
+indexserver =
+    default = https://pypi.python.org/simple
 
-Not if running for gozer.
+Note that python mirror has all the packages for openstack.
+
+But if running from HP network, you need a pip.conf (ignore tox.ini):
+
+#==== pip.conf START ====#
+[global]
+timeout = 60
+index-url = http://pypi.gozer.hpcloud.net/openstack/latest/
+trusted-host =
+    pypi.gozer.hpcloud.net
+
+[install]
+ignore-installed = true
+#==== pip.conf END ====#
+
+
 With tox, never use sudo. It is suppose to create whole VENV got you in .tox
 so that you can run tests for various python interpreters.
 
 # For running tests in one file
 tox -epy27 heat.tests.test_api_ec2token
 
-.testrepository has a fialing file containing all the failing tests.
-
-
+.testrepository has a failing file containing all the failing tests.

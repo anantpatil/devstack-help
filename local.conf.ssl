@@ -36,7 +36,7 @@ enable_service heat,h-api,h-api-cfn,h-api-cw,h-eng
 enable_service tempest
 
 USE_SLL=True
-SSL_ENABLED_SERVICES=key,nova,glance,cinder,neutron,heat
+SSL_ENABLED_SERVICES="key,nova,glance,cinder,neutron,heat"
 
 # Neutron fails because the neutron server gives certificate with
 # 'ghostrider' as name which fails to map with localhost as name.
