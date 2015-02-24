@@ -259,8 +259,14 @@ Make sure that you have checked Gevent compatible debugging box in Python
 Debugger option in Default Settings.
 
 
-tox.ini
+tox
 -------------------------------------------------------------------------------
+You have to install tox. tox is available only in pipy.python.org only.
+
+$ sudo pip --verbose --proxy http://web-proxy.ind.hp.com:8080 install --index-url http://pypi.python.org/simple tox
+
+
+
 Add following entry in tox.ini to run the tests. Otherwise pip will block.
 
 [tox]
