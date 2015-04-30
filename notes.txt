@@ -1,12 +1,15 @@
 How to setup:
 ----
+Install necessary softwares:
+sudo apt-get install -y git python-pip git-review libxml2-dev libxml2-utils tmux vim vim-gtk+ default-jdk eclipse sublime-text fonts-mplus
+
 On Ubuntu, download the devstack from
 $ git clone https://github.com/openstack-dev/devstack.git devstack
 
 and create the stack user by running the command as root. This is
 important. 
 $ sudo su
-$ devstac/tools/create-stack-user.sh
+$ devstack/tools/create-stack-user.sh
 $ exit
 
 Now login as su
