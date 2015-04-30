@@ -283,9 +283,22 @@ But if running from HP network, you need a pip.conf (ignore tox.ini):
 #==== pip.conf START ====#
 [global]
 timeout = 60
+
+# the extra index URL always helps with new packages not available in
+# gozer.
 index-url = http://pypi.gozer.hpcloud.net/openstack/latest/
+extra-index-url = http://pypi.python.org/simple/
+
+# always try pip command with sudo -E so that the env is taken from
+# current env instead of root env. Set the env properly in current shell
+# and sudo -E should go through.
+
+# Use the following proxy only if sudo -E doens't work properly.
+# proxy = http://web-proxy.ind.hp.com:8080 # try with sudo -E
+
 trusted-host =
     pypi.gozer.hpcloud.net
+    pypi.python.org
 
 [install]
 ignore-installed = true
