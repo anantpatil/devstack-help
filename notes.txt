@@ -1,321 +1,42 @@
-How to setup:
+Testing openstack services
+-----
+
+tox -v -epy27
+tox list-env
+
+grep envlist tox.ini # see all the env
+
+tox -v -epy27 --notest     # create env with not running tests
+tox -v -r -epy27           # force recreate env
+tox -v -r -epy27 --notest  # force recreate env without running tests
+
+tox -v -epy27 -- test_name_regex
+
+source .tox/env/py27/bin/activate
+
+testr list-tests # list all tests
+
+testr run -- -f # run till first failing test
+
+
+
+UT
+--
+
+
+
+Importing particular project in python interpreter:
 ----
-Install necessary softwares:
+Set the python path
+export PYTHONPATH=$PYTHONPATH:/opt/stack/heat
 
-sudo apt-get install -y git python-pip git-review libxml2-dev \
-libxml2-utils tmux vim vim-gtk+ default-jdk eclipse sublime-text \
-fonts-mplus libxslt-dev libmysqlclient-dev pep8 \
-postgresql-server-dev-9.1 python2.7-dev python-coverage python-netaddr \
-python-mysqldb python-git virtualenvwrapper python-numpy \
-virtualenvwrapper sqlite3
+Noe python interpreter has path to heat.
+All directories underlying /opt/stack/heat will be visible now.
+For e.g.: /opt/stack/heat/heat/common/context.py can be imported by:
 
+>>> import heat.common.context as ctx
+>>> dir(ctx)
+['ContextMiddleware', 'ContextMiddleware_filter_factory', 'LOG', 'RequestContext', '_LE', '__builtins__', '__doc__', '__file__', '__name__', '__package__', 'access', 'access_plugin', 'cfg', 'clients', 'context', 'db_api', 'exception', 'get_admin_context', 'importutils', 'logging', 'oslo_messaging', 'oslo_request_id', 'policy', 'request_context', 'six', 'token_endpoint', 'v3', 'wsgi']
+>>> 
 
-On Ubuntu, download the devstack from
-$ git clone https://github.com/openstack-dev/devstack.git devstack
 
-and create the stack user by running the command as root. This is
-important. 
-$ sudo su
-$ devstack/tools/create-stack-user.sh
-$ exit
-
-Now login as su
-$ sudo su stack
-
-and copy all the files you want to copy to home directory as root user.
-
-Clone the devstack again in stack's home directory.
-
-Make sure to update:
-1. local.conf
-2. stackrc: change from git to http in GIT_BASE
-3. Update the default security groups so that you can ping and ssh the VMs
-created.
-
-On Debian,
-you will have to manually create a stack user which has passwordless
-access to sudo commands. On Debian it might be a problem if don't add
-stack user to root group. 
-1. Create stack user with password less entry/
-2. Add the user to root group so that you can create stuff in root
-directory etc. JUst check if the directory structures for opt etc has
-write permission to root group.
-
-
---------------------------------------------------------------------------------
-
-DEST:
-  Destination directory very everything is stored. For stack user it
-  would be /opt/stack by default
-
-STACK_USER:
-  You need to create a non root user having password less access to all
-  the commands. Apache doesn't serve contents for root user, so you need
-  to have another user.
-
-LOCAL_IP:
-  The IP addresses used by all the services to bind their services.
-  This has to be there in /etc/hosts along with 127.0.0.1 mapped to
-  localhost.
-
-PROXIES:
-  http_proxy and https_proxy need to be configured to downlaod devstack
-  over http. Make sure to export noproxy so that horizon can be accessed
-  on local_ip.
-
-GIT_BASE:
-  Make sure you have this changed to use HTTP scheme instead of using
-  the GIT scheme. This will go in stackrc.
-
-LOG_DIR:
-
-
-SCREEN_LOGDIR:
-
-
-SCREENRC:
-
-
-STACKRC:
-  Location of openstack distributions, repositories and branches.
-  Stackrc sources localrc to override some of these settings.
-  We can set here to point to HP gozer instead of OpenStack repo.
-  Change the GIT_BASE to use http(s).
-
-LOCAL.CONF:
-  Every setting in stackrc can be redefined in local.conf
-  Your custom configuration file. It should contain:
-    Which services to be installed/enabled.
-
-    Host IP addresses to bind the services.
-
-    Floating and fixed IP ranges for VMs.
-
-    Log file locations.
-
-    Various service passwords.
-
-    Location of services in case the current node is not controller
-
-    FLAT_INTERFACE: The interface that connects your machine to local
-    network i.e. eth0 connects to controller and compute node.
-
-    MULTI_HOST: To setup on multiple hosts i.e. controller on one node
-    and compute on others...
-
-    FIXED_RANGE and FIXED_NETWORK_SIZE: This is for the tenant
-    network which is private. You will have to configure proper
-    *NETWORK_GATEWAY* for this network, ideally the first IP from the
-    FIXED network range. This IP will be assigned to the router created
-    by devstack for the demo tenant.
-    Also add the FLAT NETWORK to the no_proxy so that any one wants to
-    reach that should not go through the web-proxy.
-
-    FLOATING_RANGE: Range of public IP Addresses for your network.
-    PUBLIC_NETWORK_GATEWAY=Gateway of your external network.
-
-CREATE-STACK-USER:
-  Creates a stack user with /opt/stack as home directory.
-
-
-Items in local.conf:
-  FLOATING_RANGE=<Public accessible IP Address ranges in your setup>
-  FIXED_RANGE = <Assigned to the VMs>
-
--------------------------------------------------------------------------------
-LOCAL.CONF:
-  # Misc
-  DATABASE_PASSWORD=password
-  ADMIN_PASSWORD=password
-  SERVICE_PASSWORD=password
-  SERVICE_TOKEN=password
-  RABBIT_PASSWORD=password
-
-  # Reclone each time
-  RECLONE=yes
-
-  ## For Keystone
-  KEYSTONE_TOKEN_FORMAT=PKI
-
-  ## For Swift
-  SWIFT_REPLICAS=1
-  SWIFT_HASH=011688b44136573e209e
-
-  # Enable Logging
-  LOGFILE=/opt/stack/logs/stack.sh.log
-  VERBOSE=True
-  LOG_COLOR=True
-  SCREEN_LOGDIR=/opt/stack/logs
-
-  # Pre-requisite
-  ENABLED_SERVICES=rabbit,mysql,key
-
-  ## If you want ZeroMQ instead of RabbitMQ (don't forget to un-declare
-  'rabbit' from the pre-requesite)
-  ENABLED_SERVICES+=,-rabbit,-qpid,zeromq
-
-  ## If you want Qpid instead of RabbitMQ (don't forget to un-declare
-  'rabbit' from the pre-requesite)
-  ENABLED_SERVICES+=,-rabbit,-zeromq,qpid
-
-  # Horizon (Dashboard UI) - (always use the trunk)
-  ENABLED_SERVICES+=,horizon
-  HORIZON_REPO=https://github.com/openstack/horizon
-  HORIZON_BRANCH=master
-
-  # Nova - Compute Service
-  ENABLED_SERVICES+=,n-api,n-crt,n-obj,n-cpu,n-cond,n-sch
-  IMAGE_URLS+=",https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img"
-
-  # Nova Network - If you don't want to use Neutron and need a simple
-  # network setup (old good stuff!)
-  ENABLED_SERVICES+=,n-net
-
-  ## Nova Cells
-  ENABLED_SERVICES+=,n-cell
-
-  # Glance - Image Service
-  ENABLED_SERVICES+=,g-api,g-reg
-
-  # Swift - Object Storage
-  ENABLED_SERVICES+=,s-proxy,s-object,s-container,s-account
-
-  # Neutron - Networking Service
-  # If Neutron is not declared the old good nova-network will be used
-  ENABLED_SERVICES+=,q-svc,q-agt,q-dhcp,q-l3,q-meta,neutron
-
-  ## Neutron - Load Balancing
-  ENABLED_SERVICES+=,q-lbaas
-
-  ## Neutron - VPN as a Service
-  ENABLED_SERVICES+=,q-vpn
-
-  ## Neutron - Firewall as a Service
-  ENABLED_SERVICES+=,q-fwaas
-
-  # VLAN configuration
-  Q_PLUGIN=ml2
-  ENABLE_TENANT_VLANS=True
-
-  # GRE tunnel configuration
-  Q_PLUGIN=ml2
-  ENABLE_TENANT_TUNNELS=True
-
-  # VXLAN tunnel configuration
-  Q_PLUGIN=ml2
-  Q_ML2_TENANT_NETWORK_TYPE=vxlan   
-
-  # Cinder - Block Device Service
-  ENABLED_SERVICES+=,cinder,c-api,c-vol,c-sch,c-bak
-
-  # Heat - Orchestration Service
-  ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
-  IMAGE_URLS+=",http://fedorapeople.org/groups/heat/prebuilt-jeos-images/F17-x86_64-cfntools.qcow2"
-
-  # Ceilometer - Metering Service (metering + alarming)
-  ENABLED_SERVICES+=,ceilometer-acompute,ceilometer-acentral,ceilometer-collector,ceilometer-api
-  ENABLED_SERVICES+=,ceilometer-alarm-notify,ceilometer-alarm-eval
-
-  # Apache fronted for WSGI
-  APACHE_ENABLED_SERVICES+=keystone,swift
-
--------------------------------------------------------------------------------
-
-Change in stackrc
-GIT_BASE=${GIT_BASE:-https://review.hpcloud.net/p}
-
-and change the branches to hp/ee/master for all the projects in stackrc
-
-Make sure you have GIT_NO_SSL_VERIFY set to false or git config --global
-http.sslVerify "false"
-
--------------------------------------------------------------------------------
-
-source openrc admin
-
-#now run the commands
-
--------------------------------------------------------------------------------
-
-Neutron: You will see that the tap interface etc are not created at first.
-They are created once you boot a VM. Need to see how this is done.
-
-Update the default security group to access ping and ssh. Don't need to
-re-attach to ports of VM already created, it would take up dynamically.
-
-1. Update security group.
-nova secgroup-add-rule SECURITY_GROUP_NAME tcp 22 22 0.0.0.0/0
-nova secgroup-add-rule SECURITY_GROUP_NAME icmp -1 -1 0.0.0.0/0
-
-SECURITY_GROUP_NAME would be 'default' by default.
-
-2. Use heat_key to log-in a cirros image:
-    $ ssh -i ~/heat_key cirros@<IP>
-    or
-    $ ssh cirros@<IP> and passwd: cubswin:)
-
-How these security groups work?
-
-
--------------------------------------------------------------------------------
-No protocol specified error for stack user causes problems with opening GUI
-for that user. Fix this by copying the ~/.Xauthority file from original user
-  which you used to log into apart from stack user.
-
-
-Pycharm
--------------------------------------------------------------------------------
-Make sure that you have checked Gevent compatible debugging box in Python
-Debugger option in Default Settings.
-
-
-tox
--------------------------------------------------------------------------------
-You have to install tox. tox is available only in pipy.python.org only.
-
-$ sudo pip --verbose --proxy http://web-proxy.ind.hp.com:8080 install --index-url http://pypi.python.org/simple tox
-
-
-
-Add following entry in tox.ini to run the tests. Otherwise pip will block.
-
-[tox]
-indexserver =
-    default = https://pypi.python.org/simple
-
-Note that python mirror has all the packages for openstack.
-
-But if running from HP network, you need a pip.conf (ignore tox.ini):
-
-#==== pip.conf START ====#
-[global]
-timeout = 60
-
-# the extra index URL always helps with new packages not available in
-# gozer.
-index-url = http://pypi.gozer.hpcloud.net/openstack/latest/
-extra-index-url = http://pypi.python.org/simple/
-
-# always try pip command with sudo -E so that the env is taken from
-# current env instead of root env. Set the env properly in current shell
-# and sudo -E should go through.
-
-# Use the following proxy only if sudo -E doens't work properly.
-# proxy = http://web-proxy.ind.hp.com:8080 # try with sudo -E
-
-trusted-host =
-    pypi.gozer.hpcloud.net
-    pypi.python.org
-
-[install]
-ignore-installed = true
-#==== pip.conf END ====#
-
-
-With tox, never use sudo. It is suppose to create whole VENV got you in .tox
-so that you can run tests for various python interpreters.
-
-# For running tests in one file
-tox -epy27 heat.tests.test_api_ec2token
-
-.testrepository has a failing file containing all the failing tests.
