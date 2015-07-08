@@ -12,7 +12,7 @@ def get_admin_creds():
     d = {}
     d['username'] = 'admin'
     d['password'] = 'nomoresecrete'
-    d['auth_url'] = 'http://192.168.80.130:5000/v2.0'
+    d['auth_url'] = 'http://192.168.80.129:5000/v2.0'
     d['tenant_name'] = 'admin'
     return d
 
@@ -32,8 +32,9 @@ for s in services:
 '''
 
 # get auth_token to connect to heat API
+# you need an auth token to connect to Heat API always.
 keystone = ksclient.Client(**demo_creds)
-print "auth_token: ",keystone.auth_token, "\n"
+print "auth_token: ", keystone.auth_token, "\n"
 
 
 # get the heat endpoint URL from service_catalog
@@ -42,6 +43,8 @@ heat_endpoint = keystone.service_catalog.url_for(service_type='orchestration',
 print "demo_heat_endpoint: ", heat_endpoint, '\n'
 
 # create heat client for demo/demo
+# heat client asks for auth_token, not all clients ask for this, you may
+# want to check the openstack documents once.
 # from heatclient import client as hc
 import heatclient.client as hc
 HEAT_VERSION = 1
@@ -64,3 +67,4 @@ admin_heat = hc.Client(HEAT_VERSION,
                        **demo_creds)
 for s in admin_heat.services.list():
     print s, '\n'
+    

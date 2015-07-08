@@ -18,6 +18,8 @@ testr list-tests # list all tests
 
 testr run -- -f # run till first failing test
 
+python -m testtools.run <test> # for debugging
+
 
 
 UT
