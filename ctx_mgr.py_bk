@@ -1,0 +1,379 @@
+class ControlledPrivileges(object):
+	def __init__(self, user):
+		self._user = user
+		self.env_ok = True
+		self.orig_id = None
+
+	def __enter__(self):
+		global err
+		try:
+			self.orig_id = 1
+			if err:
+				raise Exception("oops")
+			else:
+				print self._user
+		except Exception as e:
+			print e
+			self.env_ok = False
+			self.orig_id = None
+		
+	def __exit__(self, e_typ, e_val, trcbak):
+		if self.orig_id is not None:
+			print "setting back the user id"
+		else:
+			print "never set the orig id"
+
+'''
+import sys
+
+class Context(object):
+    def __init__(self):
+        self.enter_ok = True
+
+    def __enter__(self):
+        try:
+            #raise Exception("Oops in __enter__")
+            pass
+        except:
+            if self.__exit__(*sys.exc_info()):
+                self.enter_ok = False
+            else:
+                raise
+        return self
+
+    def __exit__(self, e_typ, e_val, trcbak):
+        print "Now this runs twice"
+        return True
+
+with Context() as c:
+    if c.enter_ok:
+        print "Only runs if enter succeeded"
+
+print "Execution continues"
+
+cp = ControlledPrivileges("root")
+with cp:
+    if cp.enter_ok:
+        print "voohoo"
+'''
+'''
+def t():
+        cp = ControlledPrivileges("root")
+        with cp:
+            if not cp.env_ok:
+                print "Noop"
+                return
+            print "Hoo haa"
+            raise Exception("Hoo haa")
+err=False
+t()
+'''
+
+
+import os
+import sys
+import pwd
+import subprocess
+import logging
+import contextlib
+import six
+import shlex 
+
+logging.basicConfig(filename='/opt/stack/example.log',level=logging.DEBUG)
+LOG=logging.getLogger("ctx_mgr")
+
+def print_uids():
+	print "===="
+	print "uid => ", os.getuid()
+	print "euid => ", os.geteuid()
+	print "gid => ", os.getgid()
+	print "egid => ", os.getegid()
+	print "===="
+
+class ControlledPrivilegesFailureException(Exception):
+    pass
+
+
+'''
+@contextlib.contextmanager
+def controlled_privileges(user):
+    orig_euid = None
+    if user != 'root':
+        try:
+            orig_euid = os.geteuid()
+            real = pwd.getpwnam(user)
+            os.seteuid(real.pw_uid)
+            LOG.debug("Privileges set for user %s" % user)
+        except Exception as e:
+            raise ControlledPrivilegesFailureException(e)
+
+    try:
+        yield
+    finally:
+        if orig_euid is not None:
+            try:
+                os.seteuid(orig_euid)
+                LOG.debug("Original privileges restored.")
+            except Exception as e:
+                LOG.error("Error restoring privileges %s" % e)
+'''
+
+
+class CommandRunner(object):
+    """Helper class to run a command and store the output."""
+
+    def __init__(self, command, nextcommand=None):
+        self._command = command
+        self._next = nextcommand
+        self._stdout = None
+        self._stderr = None
+        self._status = None
+        self._privileges_set_ok = True
+        self._orig_euid = None
+
+    def __str__(self):
+        s = "CommandRunner:"
+        s += "\n\tcommand: %s" % self._command
+        if self._status:
+            s += "\n\tstatus: %s" % self.status
+        if self._stdout:
+            s += "\n\tstdout: %s" % self.stdout
+        if self._stderr:
+            s += "\n\tstderr: %s" % self.stderr
+        return s
+
+    def run(self, user='root', cwd=None, env=None):
+        """Run the Command and return the output.
+
+        Returns:
+            self
+        """
+        LOG.debug("Running command: %s" % self._command)
+
+        cmd = self._command
+
+        try:
+            with controlled_privileges(user):
+                subproc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE, cwd=cwd,
+                                           env=env, shell=True)
+                output = subproc.communicate()
+                self._status = subproc.returncode
+                self._stdout = output[0]
+                self._stderr = output[1]
+        except ControlledPrivilegesFailureException as e:
+            LOG.error("Error setting privileges for user '%s': %s"
+                      % (user, e))
+            self._status = 126
+            self._stderr = six.text_type(e)
+
+        if self._status:
+            LOG.debug("Return code of %d after executing: '%s'\n"
+                      "stdout: '%s'\n"
+                      "stderr: '%s'" % (self._status, cmd, self._stdout,
+                                        self._stderr))
+
+        if self._next:
+            self._next.run()
+        return self
+
+    @property
+    def stdout(self):
+        return self._stdout
+
+    @property
+    def stderr(self):
+        return self._stderr
+
+    @property
+    def status(self):
+        return self._status
+
+'''
+class CommandRunner(object):
+    """Helper class to run a command and store the output."""
+
+    def __init__(self, command, shell=False, nextcommand=None):
+        if isinstance(command, six.string_types):
+                assert bool(shell)
+        self._p = subprocess.Popen(command, shell=shell,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        self._command = str(command)
+        self._next = nextcommand
+        self._stdout = None
+        self._stderr = None
+        self._status = None
+        self._privileges_set_ok = True
+        self._orig_euid = None
+
+    def __str__(self):
+        s = "CommandRunner:"
+        s += "\n\tcommand: %s" % self._command
+        if self._status:
+            s += "\n\tstatus: %s" % self.status
+        if self._stdout:
+            s += "\n\tstdout: %s" % self.stdout
+        if self._stderr:
+            s += "\n\tstderr: %s" % self.stderr
+        return s
+
+    def _set_user_privileges(self, user):
+        if user != 'root':
+            self._orig_euid = os.geteuid()
+            # lower the privileges
+            try:
+                real = pwd.getpwnam(user)
+                os.seteuid(real.pw_uid)
+                LOG.debug("User privileges set for user %s, command %s"
+                          % (user, self._command))
+            except Exception as e:
+                LOG.error("Error setting privileges for user '%s': %s"
+                          % (user, e))
+                # 126: command invoked cannot be executed
+                self._status = 126
+                self._stderr = e
+                self._orig_euid = None
+                self._privileges_set_ok = False
+    
+    def _restore_orig_privilegs(self):
+        if self._orig_euid is not None:
+            try:
+                os.seteuid(self._orig_euid)
+            except Exception as e:
+                LOG.error("Error restoring privileges")
+
+    @contextlib.contextmanager
+    def controlled_privileges(self, user):
+        self._set_user_privileges(user)
+        try:
+            print "Before privileges----  "
+            print_uids()
+            yield
+        #except: #noqa
+            #pass
+        finally:
+            self._restore_orig_privilegs()
+        print "After privileges----  "
+        print_uids()
+
+    def pipe(self, cmd, stdout_file):
+        if stdout_file is not None:
+            q = subprocess.Popen(cmd, stdin=self._p.stdout, stdout=stdout_file,
+                                 stderr=subprocess.PIPE)
+        else:
+            q = subprocess.Popen(cmd, stdin=self._p.stdout, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+        self._p = q
+        self._command  += " | "
+        self._command += str(cmd)
+        if stdout_file:
+            self._command += " > " + stdout_file.name
+        
+    def run(self, user='root', cwd=None, env=None, shell=False):
+        """Run the Command and return the output.
+
+        Returns:
+            self
+        """
+        LOG.debug("Running command: %s" % self._command)
+
+        with self.controlled_privileges(user):
+            if not self._privileges_set_ok:
+                LOG.debug("Returning... privileges couldn't be set")
+                return
+            """
+            subproc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE, cwd=cwd,
+                                       env=env, shell=shell)
+            """
+            subproc = self._p
+            output = subproc.communicate()
+
+            self._status = subproc.returncode
+            self._stdout = output[0]
+            self._stderr = output[1]
+            if self._status:
+                LOG.debug("Return code of %d after executing: '%s'\n"
+		  	  "stdout: '%s'\n"
+		  	  "stderr: '%s'" % (self._status, cmd, self._stdout,
+				    	    self._stderr))
+
+        if self._next:
+            self._next.run()
+        return self
+
+    @property
+    def stdout(self):
+        return self._stdout
+
+    @property
+    def stderr(self):
+        return self._stderr
+
+    @property
+    def status(self):
+        return self._status
+'''
+
+'''
+url='/opt/stack/devstack-help/example.log.gz'
+cmd = ['cat', url]
+cr = CommandRunner(cmd)
+cmd2 = ['gunzip']
+cr.pipe(cmd2)
+fd = open('/opt/stack/devstack-help/example.log', 'w')
+cr.redirect_stdout(fd=fd)
+cr.run(user='stack')
+print "STDOUT: ", cr.stdout
+print "STDERR: ", cr.stderr
+print "exit code: ", cr.status
+'''
+
+'''
+url='http://tarballs.openstack.org/heat/heat-5.0.0.0b2.tar.gz'
+cmd = ['curl', '-s', url]
+cr = CommandRunner(cmd)
+cmd2 = ['gunzip']
+cr.pipe(cmd2)
+cmd3= ['tar', '-xvf', '-']
+cr.pipe(cmd3)
+cr.run(user='stack')
+print "STDOUT: ", cr.stdout
+print "STDERR: ", cr.stderr
+print "exit code: ", cr.status
+'''
+
+
+cmd = CommandRunner('ls -al /root')
+cr=CommandRunner(cmd)
+cr.run(user='stack')
+next_cmd = CommandRunner('ls -al /home/ananta')
+cr.run(user='ananta', shell=True)
+print "STDOUT: ", cr.stdout
+print "STDERR: ", cr.stderr
+print "exit code: ", cr.status
+
+
+'''
+class CommandBuilder(object):
+        def __init__(self, cmd):
+                self.p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE)
+        def pipe(self, cmd):
+                q = subprocess.Popen(cmd, stdin=self.p.stdout, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+                self.p = q
+        def run(self):
+                o=self.p.communicate()
+                print "STDOUT: ", o[0]
+                print "STDERR: ", o[1]
+                print "STATUS: ", self.p.returncode
+
+               
+cmd = shlex.split('ls -al /opt/stack')
+cb=CommandBuilder(cmd)
+cmd2= shlex.split('wc -l')
+cb.pipe(cmd2)
+cb.run()
+'''
