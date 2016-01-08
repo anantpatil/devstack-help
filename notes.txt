@@ -32,7 +32,7 @@ Importing particular project in python interpreter:
 Set the python path
 export PYTHONPATH=$PYTHONPATH:/opt/stack/heat
 
-Noe python interpreter has path to heat.
+Now python interpreter has path to heat.
 All directories underlying /opt/stack/heat will be visible now.
 For e.g.: /opt/stack/heat/heat/common/context.py can be imported by:
 

@@ -1,0 +1,42 @@
+C-l like zz, zt and zb in vi
+c-v m-v for vertical scrolling page wise
+c-n and c-p for one line scolling
+c-x c-f find a file and open it
+c-x c-g to kill the current command
+c-x k to kill the current buffer
+c-x k buffname to kill a particular buffer
+c-x c-b to list all the buffers
+c-x b to go to next buffer
+
+M-/ for auto completion
+
+c-x 2 split horizontally
+c-x 3 split vertically
+c-x 1 to close all the window panes except current one
+c-x o cycle through panes
+
+c-x v to get into version (source control version) related commands
+    = to show diff with current version
+    ~ show diff with particular version
+    g displays annotated revisions of the file, press L to view log message and 
+      D to see the diff
+    l to display the log of changes, press d to view the diff
+
+Spell
+    M-$ - Suggestions for current word under cursor
+
+    M-x ispell - start spell check on current buffer
+	space - skip current word; goto next
+	digit - replace word with the one displayed in suggestions list
+	r new RET - replace the just this time with new
+	R new RET - does query-replace on whole buffer
+	a - accept incorrect word, only one time
+	A - same as a, but for whole buffer
+	i - insert this word in your private dictionary
+	C-g or X - quit interactive spell check - resume with C-u M-$
+	q quit spell check and kill the spell checker
+    C-M-i - in text mode, use this for auto complete from dictionary
+
+this is a long line which I intend to format and I am seeing if it is
+easy to do so without harming myself in the process. this is really a
+bit line ouught to be formatted.
