@@ -1,0 +1,67 @@
+[[local|localrc]]
+
+DATABASE_PASSWORD=stackdb
+ADMIN_PASSWORD=nomoresecrete
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+# openssl rand -hex 10
+SERVICE_TOKEN=thequickbrownfox
+RABBIT_PASSWORD=stackqueue
+
+DEST=/opt/stack
+RECLONE=True
+#OFFLINE=True
+
+eth0=`ip addr show eth0 | grep inet | grep -v inet6 | awk '{ print $2 }' | cut -d'/'  -f1`
+HOST_IP=$eth0
+FLAT_INTERFACE=eth0
+FIXED_RANGE=10.0.1.0/24
+NETWORK_GATEWAY=10.0.1.1
+FIXED_NETWORK_SIZE=254
+export no_proxy="$eth0,localhost,127.0.0.1,::1,10.0.1.*"
+
+# Logging
+LOGFILE=$DEST/logs/stack.sh.log
+VERBOSE=True
+LOGDAYS=1
+LOG_COLOR=False
+SCREEN_LOGDIR=/opt/stack/logs
+
+CEILOMETER_BACKEND=mongodb
+
+# All the services to be disabled/enabled
+disable_service n-net 
+disable_service horizon
+disable_service tempest
+
+enable_service c-api,c-bak,c-sch,c-vol,cinder,dstat,g-api,g-reg,h-api,h-api-cfn,h-api-cw,h-eng,heat,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-agt,q-dhcp,q-l3,q-meta,q-metering,q-svc,q-vpn,quantum,rabbit,s-account,s-container,s-object,s-proxy,q-lbaas,ceilometer-acompute,ceilometer-acentral,ceilometer-collector,ceilometer-api,ceilometer-anotification,ceilometer-alarm-evaluator,ceilometer-alarm-notifier
+
+CEILOMETER_PIPELINE_INTERVAL=60
+HEAT_ENABLE_ADOPT_ABANDON=True
+[[post-config|$HEAT_CONF]]
+[DEFAULT]
+
+convergence_engine=true
+
+notification_driver=messagingv2
+
+num_engine_workers=4
+
+plugin_dirs=$HEAT_DIR/heat_integrationtests/common/test_resources
+
+hidden_stack_tags=hidden
+
+encrypt_parameters_and_properties=True
+
+[heat_api]
+workers=1
+
+[heat_api_cfn]
+workers=1
+
+[heat_api_cloudwatch]
+workers=1
+
+[[post-config|/etc/neutron/neutron_vpnaas.conf]]
+
+[service_providers]
+service_provider=VPN:openswan:neutron_vpnaas.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default

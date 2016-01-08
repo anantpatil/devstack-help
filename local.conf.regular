@@ -1,0 +1,43 @@
+[[local|localrc]]
+
+DATABASE_PASSWORD=stackdb
+ADMIN_PASSWORD=nomoresecrete
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+# openssl rand -hex 10
+SERVICE_TOKEN=thequickbrownfox
+RABBIT_PASSWORD=stackqueue
+
+#DEST=/home/passwordlessuserondebian
+RECLONE=False
+OFFLINE=True
+
+IP_VERSION=4
+eth0=`ip addr show eth0 | grep inet | grep -v inet6 | awk '{ print $2 }' | cut -d'/'  -f1`
+HOST_IP=$eth0
+FLAT_INTERFACE=eth0
+FIXED_RANGE=10.0.1.0/24
+NETWORK_GATEWAY=10.0.1.1
+FIXED_NETWORK_SIZE=254
+export no_proxy="$eth0,localhost,127.0.0.1,::1,10.0.1.*"
+
+# Logging
+LOGFILE=$DEST/logs/stack.sh.log
+VERBOSE=True
+LOGDAYS=1
+LOG_COLOR=False
+SCREEN_LOGDIR=/opt/stack/logs
+
+# All the services to be disabled/enabled
+disable_service n-net
+disable_service horizon
+enable_service q-svc
+enable_service q-agt
+enable_service q-dhcp
+enable_service q-l3
+enable_service q-meta
+enable_service neutron
+enable_service heat,h-api,h-api-cfn,h-api-cw,h-eng
+disable_service tempest
+
+# Openstack magnus
+# enable_plugin magnum https://github.com/openstack/magnum master
