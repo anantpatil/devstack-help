@@ -1,0 +1,62 @@
+[[local|localrc]]
+
+DATABASE_PASSWORD=stackdb
+ADMIN_PASSWORD=nomoresecrete
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+# openssl rand -hex 10
+SERVICE_TOKEN=thequickbrownfox
+RABBIT_PASSWORD=stackqueue
+
+DEST=/opt/stack
+RECLONE=yes
+OFFLINE=False
+
+eth0=`ip addr show eth0 | grep inet | grep -v inet6 | awk '{ print $2 }' | cut -d'/'  -f1`
+HOST_IP=$eth0
+FLAT_INTERFACE=eth0
+FIXED_RANGE=10.0.1.0/24
+NETWORK_GATEWAY=10.0.1.1
+FIXED_NETWORK_SIZE=254
+export no_proxy="$eth0,localhost,127.0.0.1,::1,10.0.1.*"
+
+KEYSTONE_BRANCH=stable/liberty
+NOVA_BRANCH=stable/liberty
+GLANCE_BRANCH=stable/liberty
+CINDER_BRANCH=stable/liberty
+NEUTRON_BRANCH=stable/liberty
+HEAT_BRANCH=stable/liberty
+CEILOMETER_BRANCH=stable/liberty
+SWIFT_BRANCH=2.3.0
+OCTAVIA_BRANCH=stable/liberty
+NEUTRON_LBAAS_BRANCH=stable/liberty
+
+# load external lbaas plugin
+#enable_plugin neutron-lbaas https://git.openstack.org/openstack/neutron-lbaas
+#enable_plugin octavia https://git.openstack.org/openstack/octavia
+
+# Logging
+LOGFILE=$DEST/logs/stack.sh.log
+VERBOSE=True
+LOGDAYS=1
+LOG_COLOR=False
+SCREEN_LOGDIR=/opt/stack/logs
+
+CEILOMETER_BACKEND=mongodb
+
+# All the services to be disabled/enabled
+disable_service n-net
+disable_service horizon
+disable_service tempest
+
+enable_service c-api,c-bak,c-sch,c-vol,cinder,dstat,g-api,g-reg,h-api,h-api-cfn,h-api-cw,h-eng,heat,key,mysql,n-api,n-cond,n-cpu,n-crt,n-obj,n-sch,q-agt,q-dhcp,q-l3,q-meta,q-lbaasv2,q-metering,q-svc,q-vpn,quantum,rabbit,s-account,s-container,s-object,s-proxy,ceilometer-acompute,ceilometer-acentral,ceilometer-collector,ceilometer-api,ceilometer-anotification,ceilometer-alarm-evaluator,ceilometer-alarm-notifier,octavia,o-cw,o-hk,o-hm,o-api
+
+HEAT_ENABLE_ADOPT_ABANDON=True
+[[post-config|$HEAT_CONF]]
+[DEFAULT]
+
+notification_driver=messagingv2
+
+num_engine_workers=2
+
+plugin_dirs=$HEAT_DIR/heat_integrationtests/common/test_resources
+
