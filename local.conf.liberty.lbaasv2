@@ -25,9 +25,6 @@ GLANCE_BRANCH=stable/liberty
 CINDER_BRANCH=stable/liberty
 NEUTRON_BRANCH=stable/liberty
 HEAT_BRANCH=stable/liberty
-CEILOMETER_BRANCH=stable/liberty
-SWIFT_BRANCH=2.3.0
-OCTAVIA_BRANCH=stable/liberty
 NEUTRON_LBAAS_BRANCH=stable/liberty
 
 # Logging
@@ -38,8 +35,10 @@ LOG_COLOR=False
 SCREEN_LOGDIR=/opt/stack/logs
 
 # Load the external LBaaS plugin.
-enable_plugin neutron-lbaas https://git.openstack.org/openstack/neutron-lbaas
-enable_plugin octavia https://git.openstack.org/openstack/octavia
+enable_plugin neutron-lbaas https://git.openstack.org/openstack/neutron-lbaas stable/liberty
+
+# Set lbaas backend to IP namespace based HAProxy
+NEUTRON_LBAAS_SERVICE_PROVIDERV2=LOADBALANCERV2:Haproxy:neutron_lbaas.drivers.haproxy.synchronous_namespace_driver.HaproxyNSDriver:default
 
 # Pre-requisite
 ENABLED_SERVICES=rabbit,mysql,key
@@ -51,10 +50,7 @@ ENABLED_SERVICES+=,g-api,g-reg
 ENABLED_SERVICES+=,q-svc,q-agt,q-dhcp,q-l3,q-meta
 # Enable LBaaS v2
 ENABLED_SERVICES+=,q-lbaasv2
-ENABLED_SERVICES+=,octavia,o-cw,o-hk,o-hm,o-api
 # Cinder
 ENABLED_SERVICES+=,c-api,c-vol,c-sch
 # Heat
 ENABLED_SERVICES+=,h-api,h-api-cfn,h-api-cw,h-eng
-# Tempest
-ENABLED_SERVICES+=,tempest
