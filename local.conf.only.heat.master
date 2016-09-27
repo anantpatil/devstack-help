@@ -7,7 +7,6 @@ SERVICE_PASSWORD=$ADMIN_PASSWORD
 SERVICE_TOKEN=thequickbrownfox
 RABBIT_PASSWORD=stackqueue
 
-#DEST=/home/passwordlessuserondebian
 RECLONE=True
 OFFLINE=False
 
@@ -27,16 +26,9 @@ LOGDAYS=1
 LOG_COLOR=False
 SCREEN_LOGDIR=/opt/stack/logs
 
-# disable nova network and horizon
-#disable_service n-net
-#disable_service horizon
-
 # disable all but keystone and heat
 disable_all_services
 # you need rabbitmq and mysql
 enable_service rabbit mysql
 enable_service keystone
 enable_service heat,h-api,h-api-cfn,h-api-cw,h-eng
-
-# Openstack magnus
-# enable_plugin magnum https://github.com/openstack/magnum master
