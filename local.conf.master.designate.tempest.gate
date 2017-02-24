@@ -1,0 +1,53 @@
+[[local|localrc]]
+
+DATABASE_PASSWORD=stackdb
+ADMIN_PASSWORD=nomoresecrete
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+# openssl rand -hex 10
+SERVICE_TOKEN=thequickbrownfox
+SERVICE_PASSWORD=thequickbrownfox
+RABBIT_PASSWORD=stackqueue
+
+DEST=/opt/stack
+RECLONE=True
+OFFLINE=False
+
+eth0=`ip addr show eth0 | grep inet | grep -v inet6 | awk '{ print $2 }' | cut -d'/'  -f1`
+HOST_IP=$eth0
+FLAT_INTERFACE=eth0
+FIXED_RANGE=10.0.1.0/24
+NETWORK_GATEWAY=10.0.1.1
+FIXED_NETWORK_SIZE=254
+export no_proxy="$eth0,localhost,127.0.0.1"
+
+# Logging
+LOGFILE=$DEST/logs/stack.sh.log
+SWIFT_HASH=1234123412341234
+NOVNC_FROM_PACKAGE=True
+ENABLED_SERVICES=c-api,c-bak,c-sch,c-vol,ceilometer-acentral,ceilometer-acompute,ceilometer-alarm-evaluator,ceilometer-alarm-notifier,ceilometer-anotification,ceilometer-api,ceilometer-collector,cinder,dstat,g-api,g-reg,horizon,key,mysql,n-api,n-cauth,n-cond,n-cpu,n-crt,n-novnc,n-obj,n-sch,placement-api,q-agt,q-dhcp,q-l3,q-meta,q-metering,q-svc,quantum,rabbit,s-account,s-container,s-object,s-proxy,tempest
+SKIP_EXERCISES=boot_from_volume,bundle,client-env,euca
+# Screen console logs will capture service logs.
+SYSLOG=False
+VERBOSE=True
+LOGDAYS=1
+VIRT_DRIVER=libvirt
+SWIFT_REPLICAS=1
+LOG_COLOR=False
+# Don't reset the requirements.txt files after g-r updates
+UNDO_REQUIREMENTS=False
+CINDER_PERIODIC_INTERVAL=10
+export OS_NO_CACHE=True
+CEILOMETER_BACKEND=mysql
+LIBS_FROM_GIT=
+# set this until all testing platforms have libvirt >= 1.2.11
+# see bug #1501558
+EBTABLES_RACE_FIX=True
+CINDER_SECURE_DELETE=False
+CINDER_VOLUME_CLEAR=none
+LIBVIRT_TYPE=qemu
+VOLUME_BACKING_FILE_SIZE=24G
+TEMPEST_HTTP_IMAGE=http://git.openstack.org/static/openstack.png
+FORCE_CONFIG_DRIVE=False
+enable_plugin designate git://git.openstack.org/openstack/designate
+DESIGNATE_SERVICE_PORT_DNS=5322
+DESIGNATE_BACKEND_DRIVER=bind9
