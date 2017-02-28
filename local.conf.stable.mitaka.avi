@@ -9,7 +9,7 @@ SERVICE_PASSWORD=thequickbrownfox
 RABBIT_PASSWORD=stackqueue
 
 DEST=/opt/stack
-RECLONE=True
+RECLONE=Flase
 OFFLINE=False
 
 eth0=`ip addr show eth0 | grep inet | grep -v inet6 | awk '{ print $2 }' | cut -d'/'  -f1`
@@ -19,6 +19,8 @@ FIXED_RANGE=10.0.1.0/24
 NETWORK_GATEWAY=10.0.1.1
 FIXED_NETWORK_SIZE=254
 export no_proxy="$eth0,localhost,127.0.0.1"
+
+LIBS_FROM_GIT=python-openstackclient
 
 KEYSTONE_BRANCH=stable/mitaka
 NOVA_BRANCH=stable/mitaka
@@ -37,7 +39,13 @@ LOGFILE=$DEST/logs/stack.sh.log
 
 NOVNC_FROM_PACKAGE=True
 
-ENABLED_SERVICES=c-api,c-bak,c-sch,c-vol,ceilometer-acentral,ceilometer-acompute,ceilometer-alarm-evaluator,ceilometer-alarm-notifier,ceilometer-anotification,ceilometer-api,ceilometer-collector,cinder,dstat,g-api,g-reg,horizon,key,mysql,n-api,n-cauth,n-cond,n-cpu,n-crt,n-novnc,n-obj,n-sch,placement-api,q-agt,q-dhcp,q-l3,q-meta,q-metering,q-svc,quantum,rabbit,s-account,s-container,s-object,s-proxy,tempest
+# ensure the dashboard is enabled for folks to access from ui
+enable_plugin neutron-lbaas-dashboard https://git.openstack.org/openstack/neutron-lbaas-dashboard stable/mitaka
+enable_plugin neutron-lbaas https://git.openstack.org/openstack/neutron-lbaas stable/mitaka
+
+NEUTRON_LBAAS_SERVICE_PROVIDERV2=LOADBALANCERV2:Haproxy:neutron_lbaas.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default
+
+ENABLED_SERVICES=c-api,c-bak,c-sch,c-vol,ceilometer-acentral,ceilometer-acompute,ceilometer-alarm-evaluator,ceilometer-alarm-notifier,ceilometer-anotification,ceilometer-api,ceilometer-collector,cinder,dstat,g-api,g-reg,horizon,key,mysql,n-api,n-cauth,n-cond,n-cpu,n-crt,n-novnc,n-obj,n-sch,placement-api,q-agt,q-dhcp,q-l3,q-meta,q-metering,q-svc,q-lbaasv2,quantum,rabbit,s-account,s-container,s-object,s-proxy,tempest
 
 SKIP_EXERCISES=boot_from_volume,bundle,client-env,euca
 # Screen console logs will capture service logs.
