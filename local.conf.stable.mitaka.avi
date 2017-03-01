@@ -9,7 +9,7 @@ SERVICE_PASSWORD=thequickbrownfox
 RABBIT_PASSWORD=stackqueue
 
 DEST=/opt/stack
-RECLONE=Flase
+RECLONE=True
 OFFLINE=False
 
 eth0=`ip addr show eth0 | grep inet | grep -v inet6 | awk '{ print $2 }' | cut -d'/'  -f1`
