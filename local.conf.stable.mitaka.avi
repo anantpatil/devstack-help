@@ -39,6 +39,15 @@ LOGFILE=$DEST/logs/stack.sh.log
 
 NOVNC_FROM_PACKAGE=True
 
+
+# avoid devstack asking for this and hanging stack.sh script
+SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5
+# default is 3, not needed for dev setup
+SWIFT_REPLICAS=1
+# know your location; default is $DEST/data/swift
+# change following if needed
+# SWIFT_DATA_DIR=$DEST/data
+
 # ensure the dashboard is enabled for folks to access from ui
 enable_plugin neutron-lbaas-dashboard https://git.openstack.org/openstack/neutron-lbaas-dashboard stable/mitaka
 enable_plugin neutron-lbaas https://git.openstack.org/openstack/neutron-lbaas stable/mitaka
